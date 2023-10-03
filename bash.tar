@@ -1,0 +1,83 @@
+#!/bin/bash
+
+url="$1"
+data=$(curl -s "$url")
+email="$2"
+birth="$3"
+groups="$5"
+folder="$6"
+
+if [[ $# != 0 ]]; then
+	# if arguments
+	if [[ $url =~ ^http:// ]]; then
+		echo "Fetching data from URL"
+		wget -q "$url"
+		if [[ $? = 0 ]]; then
+			echo "Failed to download URL"
+		else
+			echo "Download Successful"
+			email=$(echo "$data" | cut -d ';' -f 1)
+			birth=$(echo "$data" | cut -d ';' -f 2)
+			groups=$(echo "$data" | cut -d ';' -f 3)
+			folder=$(echo "$data" | cut -d ';' -f 4)
+		fi
+	else
+		if [[ -f $url ]]; then
+			echo "Found Local File"
+			email=$(echo "$data" | cut -d ';' -f 1)
+			birth=$(echo "$data" | cut -d ';' -f 2)
+			groups=$(echo "$data" | cut -d ';' -f 3)
+			folder=$(echo "$data" | cut -d ';' -f 4)
+		else
+			echo "File not found"
+		fi
+	fi
+else
+	# if no arguments
+	read -p "What file/CSV file do you wanna use?: " filename
+	if [[ $filename =~ ^http:// ]]; then
+		echo "Fetching Data from URL"
+		wget -q "$filename"
+		if [[ $? = 0 ]]; then
+			echo "Failed to download URL"
+		else
+			echo "Download Successful"
+			email=$(echo "$data" | cut -d ';' -f 1)
+			birth=$(echo "$data" | cut -d ';' -f 2)
+			groups=$(echo "$data" | cut -d ';' -f 3)
+			folder=$(echo "$data" | cut -d ';' -f 4)
+		fi
+	else
+		if [[ -f $filename ]]; then
+			echo "Found local file"
+			email=$(echo "$data" | cut -d ';' -f 1)
+			birth=$(echo "$data" | cut -d ';' -f 2)
+			groups=$(echo "$data" | cut -d ';' -f 3)
+			folder=$(echo "$data" | cut -d ';' -f 4)
+		else
+			echo "File not found"
+		fi
+	fi
+fi
+
+function userCreation {
+	username=$(echo "$email" | awk -F[.@] '{ print toupper(substr($2,1,1)) toupper(substr($1,1,1)) tolower(substr($1,2)) }')
+	echo "Creating Username: $username"
+}
+
+IFS = ';'
+while read email birth groups folder
+do
+	if [[ $email == "e-mail" ]]; then
+		continue
+	fi
+
+	userCreated
+	sharedCreated
+	groupCreated
+	echo "-------"
+done < $filename
+
+echo "Fetching Data from $url: $data"
+echo "Email: $email"
+echo "Birth Date: $birth"
