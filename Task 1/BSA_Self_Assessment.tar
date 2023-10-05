@@ -1,0 +1,109 @@
+#!/bin/bash
+
+email="$2"
+birth="$3"
+groups="$5"
+folder="$6"
+
+function downloadFile {
+	url="$1"
+	wget -q "$1" -O downloadedFile
+	if [[ $? != 0 ]]; then
+		echo "Didnt Download"
+		exit 1
+	fi
+	echo "File downloaded from $url"
+}
+
+if [[ $# != 0 ]]; then
+	# if arguments
+	if [[ $1 =~ ^http:// ]]; then
+		echo "Fetching data from URL"
+		filename=$(downloadFile "$1")
+		if [[ $? = 0 ]]; then
+			echo "Failed to download URL"
+		else
+			echo "Download Successful"
+		fi
+	else
+		if [[ -f $url ]]; then
+			echo "Found Local File"
+		else
+			echo "File not found"
+		fi
+	fi
+else
+	# if no arguments
+	read -p "What file/CSV file do you wanna use?: " filename
+	if [[ $filename =~ ^http:// ]]; then
+		echo "Fetching Data from URL"
+		filename=$(downloadFile "$1")
+		if [[ $? = 0 ]]; then
+			echo "Failed to download URL"
+		else
+			echo "Download Successful"
+		fi
+	else
+		if [[ -f $filename ]]; then
+			echo "Found local file"
+		else
+			echo "File not found"
+		fi
+	fi
+fi
+
+function userCreation {
+	username=$(echo "$email" | awk -F[.@] '{ print toupper(substr($2,1,1)) toupper(substr($1,1,1)) substr($1,2) }')
+	echo "Creating Username: $username"
+
+	year=$(date -d "$birth" +"%Y")
+	month=$(date -d "$birth" +"%m")
+	password="$year$month"
+	echo "Making Password"
+
+	useradd -m -s /bin/bash "$username"
+
+	if [[ $? = 0 ]]; then
+		echo "User creation succeeded"
+	else
+		echo "User creation failed exit code $?"
+	fi
+
+	echo "$username:$password" | chpasswd
+	chage -d 0 "$username"
+
+	echo "Home Directory: /home/$username"
+}
+
+function sharedCreated {
+	if [[ $? = 0 ]]; then
+		echo "Shared creation succeeded"
+	else
+		echo "Shared creation failed exit code $?"
+	fi
+}
+
+function groupCreated {
+	if [[ $? = 0 ]]; then
+		echo "Group creation succeeded"
+	else
+		echo "Group creation failed exit code $?"
+	fi
+}
+
+IFS = ';'
+while read email birth groups folder
+do
+	if [[ $email == "e-mail" ]]; then
+		continue
+	fi
+
+	userCreated
+	sharedCreated
+	groupCreated
+	echo "-------"
+done < $filename
+
+echo "Fetching Data from $url: $data"
+echo "Email: $email"
+echo "Birth Date: $birth"
