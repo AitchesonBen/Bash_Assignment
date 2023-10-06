@@ -1,0 +1,42 @@
+#!/bin/bash
+
+if [[ $# = 0 ]]; then
+    read -p "What directory to use? " directory
+else
+    directory=$1
+fi
+
+if [[ ! -d "$directory" ]]; then
+    echo "Error: Directory not found"
+    exit 1
+fi
+
+directory_name=$(basename "$directory")
+
+read -p "What directory would you like to use?: " new_directory
+
+new_directory=${new_directory:-/tmp}
+
+tar -czf "$new_directory/${directory_name}_backup.tar.gz" -C $directory; . 2> /dev/null
+
+read -p "Enter the IP address of the remote machine: " ip_address
+read-p "Enter the port number (default set to 22):" port_number
+port_number=${port_number:-22}
+
+if [[ ! ping -c 1 "$ip" &> /dev/null ]]; then
+    echo "Error: Server not found"
+    exit 1
+else
+    echo "Found server"
+fi
+
+read -p "Enter the username for the RM (remote machine): " username
+read -p "Enter the directory on the RM (remote machine): " rm_directory
+
+scp -P $port_number "$new_directory/${directory_name}_backup.tar.gz" $username@$ip:$rm_directory
+
+if [[ $? -eq 0 ]]; then
+    echo "File backed up successful!"
+else
+    echo "File back up failed."
+fi
