@@ -1,0 +1,18 @@
+#!/bin/bash
+
+userdel -r DEdsger
+userdel -r MJohn
+userdel -r TAndrew
+userdel -r TAlan
+userdel -r TLinus
+userdel -r SBjanne
+userdel -r TKen
+userdel -r GJames
+userdel -r BTim
+
+groupdel visitor
+groupdel visitorData
+
+rm -r /visitor
+rm shared
+rm -r /staffData

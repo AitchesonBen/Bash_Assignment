@@ -1,66 +1,60 @@
 #!/bin/bash
 
-email="$2"
-birth="$3"
-groups="$5"
-folder="$6"
-
-function downloadFile {
-	url="$1"
-	wget -q "$1" -O downloadedFile
-	if [[ $? != 0 ]]; then
-		echo "Didnt Download"
-		echo "Didnt Download" >> log.txt
-		exit 1
-	fi
-	echo "File downloaded from $url"
-	echo "File downloaded from $url" >> log.txt
-}
-
 if [[ $# != 0 ]]; then
 	# if arguments
 	if [[ $1 =~ ^http:// ]]; then
+		wget -q "$1"
 		echo "Fetching data from URL"
 		echo "Fetching data from URL" >> log.txt
-		filename=$(downloadFile "$1")
-		if [[ $? = 0 ]]; then
+		if [[ $? != 0 ]]; then
 			echo "Failed to download URL"
 			echo "Failed to download URL" >> log.txt
-		else
-			echo "Download Successful"
-			echo "Download Successful" >> log.txt
+			exit 1
 		fi
+		echo "Download Successful"
+		echo "Download Successful" >> log.txt
+
+		filename=$(basename "$1")
+		echo "Url: $filename"
 	else
-		if [[ -f $url ]]; then
+		if [[ -f "$1" ]]; then
 			echo "Found Local File"
 			echo "Found Local File" >> log.txt
+			filename="$1"
 		else
 			echo "File not found"
 			echo "File not found" >> log.txt
 		fi
 	fi
-else
+fi
+
+if [[ $# = 0 ]]; then
 	# if no arguments
 	read -p "What file/CSV file do you wanna use?: " filename
 	if [[ $filename =~ ^http:// ]]; then
+		wget -q "$filename"
+
 		echo "Fetching Data from URL"
 		echo "Fetching Data from URL" >> log.txt
-		filename=$(downloadFile "$1")
-		if [[ $? = 0 ]]; then
+		if [[ $? != 0 ]]; then
 			echo "Failed to download URL"
 			echo "Failed to download URL" >> log.txt
-		else
-			echo "Download Successful"
-			echo "Download Successful" >> log.txt
+			exit 1
 		fi
+		echo "Download Successful"
+		echo "Download Successful" >> log.txt
+
+		filename=$(basename "$1")
+		echo "Url: $filename"
+	fi
+else
+	if [[ -f "$filename" ]]; then
+		echo "Found local file"
+		echo "Found local file" >> log.txt
 	else
-		if [[ -f $filename ]]; then
-			echo "Found local file"
-			echo "Found local file" >> log.txt
-		else
-			echo "File not found"
-			echo "File not found" >> log.txt
-		fi
+		echo "File not found"
+		echo "File not found" >> log.txt
+		exit 1
 	fi
 fi
 
@@ -93,16 +87,57 @@ function userCreation {
 }
 
 function sharedCreated {
-	if [[ $? = 0 ]]; then
-		echo "Shared creation succeeded"
-		echo "Shared creation succeeded" >> log.txt
+	mkdir /"$folder"
+	if [[ ! -d "$folder" ]]; then
+		mkdir /"$folder"
+		echo "Creating Shared Folder: $folder"
+		echo "Creating Shared Folder: $folder" >> log.txt
 	else
-		echo "Shared creation failed exit code $?"
-		echo "Shared creation failed exit code $?" >> log.txt
+		echo "Shared Folder exists: $folder"
+		echo "Shared Folder exists: $folder" >> log.txt
+	fi
+
+	if [[ -d "$folder" ]]; then
+		sharedGroup="${folder////}"
+		if grep -q "^sharedGroup" /etc/group; then
+			echo "Group $sharedGroup already exists"
+			echo "Group $sharedGroup already exists" >> log.txt
+		else
+			groupadd "sharedGroup"
+			echo "Creating group: $sharedGroup"
+			echo "Creating group: $sharedGroup" >> log.txt
+		fi
+
+		chown -R root:"$sharedGroup" "$folder"
+		chmod 770 "$folder"
+		echo "Giving group ownership to $sharedGroup for $folder"
+		echo "Giving group ownership to $sharedGroup for $folder" >> log.txt
+	else
+		echo "Shared Folder not found: $folder"
+		echo "Shared Folder not found: $folder" >> log.txt
+		return 1
+	fi
+
+	ln -s "$folder" "/home/$username/shared"
+	if [[ $? = 0 ]]; then
+		echo "Shared link creation succeeded"
+		echo "Shared link creation succeeded" >> log.txt
+	else
+		echo "Shared link creation failed exit code $?"
+		echo "Shared link creation failed exit code $?" >> log.txt
 	fi
 }
 
 function groupCreated {
+	IFS=';' read -r -a groups <<< "$addGroups"
+	for group in "${groups[@]}"; do
+		echo "Group: $group"
+		echo "Group: $group" >> log.txt
+		echo "Creating $group"
+		echo "Creating $group" >> log.txt
+		groupadd "$group"
+	done
+
 	if [[ $? = 0 ]]; then
 		echo "Group creation succeeded"
 		echo "Group creation succeeded" >> log.txt
@@ -112,19 +147,17 @@ function groupCreated {
 	fi
 }
 
-IFS = ';'
-while read email birth groups folder
+IFS=';'
+while read email birth addGroups folder
 do
 	if [[ $email == "e-mail" ]]; then
 		continue
 	fi
 
-	userCreated
+	userCreation
 	sharedCreated
 	groupCreated
 	echo "-------"
 done < $filename
 
 echo "Fetching Data from $url: $data"
-echo "Email: $email"
-echo "Birth Date: $birth"
