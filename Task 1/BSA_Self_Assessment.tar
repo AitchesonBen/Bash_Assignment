@@ -10,26 +10,33 @@ function downloadFile {
 	wget -q "$1" -O downloadedFile
 	if [[ $? != 0 ]]; then
 		echo "Didnt Download"
+		echo "Didnt Download" >> log.txt
 		exit 1
 	fi
 	echo "File downloaded from $url"
+	echo "File downloaded from $url" >> log.txt
 }
 
 if [[ $# != 0 ]]; then
 	# if arguments
 	if [[ $1 =~ ^http:// ]]; then
 		echo "Fetching data from URL"
+		echo "Fetching data from URL" >> log.txt
 		filename=$(downloadFile "$1")
 		if [[ $? = 0 ]]; then
 			echo "Failed to download URL"
+			echo "Failed to download URL" >> log.txt
 		else
 			echo "Download Successful"
+			echo "Download Successful" >> log.txt
 		fi
 	else
 		if [[ -f $url ]]; then
 			echo "Found Local File"
+			echo "Found Local File" >> log.txt
 		else
 			echo "File not found"
+			echo "File not found" >> log.txt
 		fi
 	fi
 else
@@ -37,17 +44,22 @@ else
 	read -p "What file/CSV file do you wanna use?: " filename
 	if [[ $filename =~ ^http:// ]]; then
 		echo "Fetching Data from URL"
+		echo "Fetching Data from URL" >> log.txt
 		filename=$(downloadFile "$1")
 		if [[ $? = 0 ]]; then
 			echo "Failed to download URL"
+			echo "Failed to download URL" >> log.txt
 		else
 			echo "Download Successful"
+			echo "Download Successful" >> log.txt
 		fi
 	else
 		if [[ -f $filename ]]; then
 			echo "Found local file"
+			echo "Found local file" >> log.txt
 		else
 			echo "File not found"
+			echo "File not found" >> log.txt
 		fi
 	fi
 fi
@@ -55,39 +67,48 @@ fi
 function userCreation {
 	username=$(echo "$email" | awk -F[.@] '{ print toupper(substr($2,1,1)) toupper(substr($1,1,1)) substr($1,2) }')
 	echo "Creating Username: $username"
+	echo "Creating Username: $username" >> log.txt
 
 	year=$(date -d "$birth" +"%Y")
 	month=$(date -d "$birth" +"%m")
 	password="$year$month"
 	echo "Making Password"
+	echo "Making Password" >> log.txt
 
 	useradd -m -s /bin/bash "$username"
 
 	if [[ $? = 0 ]]; then
 		echo "User creation succeeded"
+		echo "User creation succeeded" >> log.txt
 	else
 		echo "User creation failed exit code $?"
+		echo "User creation failed exit code $?" >> log.txt
 	fi
 
 	echo "$username:$password" | chpasswd
 	chage -d 0 "$username"
 
 	echo "Home Directory: /home/$username"
+	echo "Home Directory: /home/$username" >> log.txt
 }
 
 function sharedCreated {
 	if [[ $? = 0 ]]; then
 		echo "Shared creation succeeded"
+		echo "Shared creation succeeded" >> log.txt
 	else
 		echo "Shared creation failed exit code $?"
+		echo "Shared creation failed exit code $?" >> log.txt
 	fi
 }
 
 function groupCreated {
 	if [[ $? = 0 ]]; then
 		echo "Group creation succeeded"
+		echo "Group creation succeeded" >> log.txt
 	else
 		echo "Group creation failed exit code $?"
+		echo "Group creation failed exit code $?" >> log.txt
 	fi
 }
 
