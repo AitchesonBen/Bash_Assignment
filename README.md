@@ -11,7 +11,7 @@ The purpose of the script is to accept a URL file or local file or information f
 
 Script 1 can be run by opening up the a putty session using ```gateway@ict.op.ac.nz``` at the port number of ```46815```
 
-To run the script in the putty session you use the command ```nano task1.sh``` and in the file 'BSA_Self_Assessment.tar' in task 1 folder copy the code in. To run the script you first need to use ```chmod 700 task1.sh``` to change the permissions on the file. Finally to run the script the command is ```sudo ./task1.sh``` then either put the file after that or after running the script it will ask you for it. I add sudo infront of the command so that the commands work properly with permissions.
+To run the script in the putty session you use the command ```nano task1.sh``` and in the file 'BSA_Assessment_Task1.tar' in task 1 folder copy the code in. To run the script you first need to use ```chmod 700 task1.sh``` to change the permissions on the file. Finally to run the script the command is ```sudo ./task1.sh``` then either put the file after that or after running the script it will ask you for it. I add sudo infront of the command so that the commands work properly with permissions.
 
 ## Script 2
 
